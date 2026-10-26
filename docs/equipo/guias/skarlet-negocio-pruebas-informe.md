@@ -335,7 +335,7 @@ Añade columna “Evidencia (pág./captura)”.
 Actualizar [`../../arquitectura/diagrama.md`](../../arquitectura/diagrama.md) o PDF anexo:
 
 ```text
-React (URL) → Gateway (invoke URL) → BFF (IP:8080) → MS (:8081/:8082) → Postgres
+React (URL) → Gateway (invoke URL) → BFF (IP:8080) → MS (:8081/:8082) → MySQL 8.4
 Entra (tenant) emite JWT validado en Gateway y BFF
 ```
 

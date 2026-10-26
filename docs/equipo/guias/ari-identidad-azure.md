@@ -169,7 +169,7 @@ Sin este paso, React no obtiene access token para la API.
 
 ## 9. Paso 7 — Probar que todo funciona (con el repo)
 
-Pide a un compañero que levante Postgres + BFF (o hazlo tú siguiendo [`../../onboarding/refs-y-entorno.md`](../../onboarding/refs-y-entorno.md) §6).
+Pide a un compañero que levante MySQL + BFF (o hazlo tú siguiendo [`../../onboarding/refs-y-entorno.md`](../../onboarding/refs-y-entorno.md) §6).
 
 | Sub | Acción | Resultado esperado |
 | --- | --- | --- |

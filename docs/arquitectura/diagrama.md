@@ -2,12 +2,13 @@
 
 Arquitectura de la solución que vamos a entregar, alineada a la guía, a las anotaciones del profesor y al **monorepo ya creado**.
 
-**IDaaS:** Microsoft Entra ID (Azure) · **Front:** React + MSAL + Axios · **Entrada:** AWS API Gateway · **Orquestación:** BFF Spring Boot · **Dominio:** `ms-solicitudes` + `ms-catalogo` · **Datos:** PostgreSQL 16 en Docker (EC2).
+**IDaaS:** Microsoft Entra ID (Azure) · **Front:** React + MSAL + Axios · **Entrada:** AWS API Gateway · **Orquestación:** BFF Spring Boot (Java 21) · **Dominio:** `ms-solicitudes` + `ms-catalogo` · **Datos:** MySQL 8.4 en Docker (bases `solicitudes` y `catalogo`). Al crear una categoría, `ms-catalogo` publica `categoria.creada` en RabbitMQ y `ms-solicitudes` guarda una copia.
 
 ```text
 React + MSAL  →  Entra ID (login / JWT)
-React + MSAL  →  API Gateway  →  BFF :8080  →  ms-solicitudes :8081  →  PostgreSQL (mesatech_solicitudes)
-                                         └→  ms-catalogo    :8082  →  PostgreSQL (mesatech_catalogo)
+React + MSAL  →  API Gateway  →  BFF :8080  →  ms-solicitudes :8081  →  MySQL (solicitudes)
+                                         └→  ms-catalogo    :8082  →  MySQL (catalogo)
+ms-catalogo  -- categoria.creada -->  catalogo.exchange  -->  solicitudes.catalogo.queue  -->  ms-solicitudes
 ```
 
 **Regla de seguridad:** React solo habla con API Gateway (en AWS) o, en local, con el BFF. Un acceso directo a `:8080`, `:8081` o `:8082` sin JWT válido responde **401**.
@@ -42,8 +43,8 @@ flowchart LR
     end
 
     subgraph Datos["infra/ · Docker en EC2"]
-        DB1[(PostgreSQL<br/>mesatech_solicitudes)]
-        DB2[(PostgreSQL<br/>mesatech_catalogo)]
+        DB1[(MySQL 8.4<br/>solicitudes)]
+        DB2[(MySQL 8.4<br/>catalogo)]
     end
 
     C --> R
@@ -72,9 +73,10 @@ flowchart LR
 | Entra ID | Portal Azure (no es código) | — | Usuarios / apps del tenant |
 | API Gateway | Consola AWS (HTTP API) | 443 | No |
 | BFF | `bff/` | **8080** | **No** (solo reenvía) |
-| Microservicio solicitudes | `ms-solicitudes/` | **8081** | `mesatech_solicitudes` |
-| Microservicio catálogo | `ms-catalogo/` | **8082** | `mesatech_catalogo` |
-| PostgreSQL Docker | `infra/docker-compose.yml` | 5432 | Las dos BD |
+| Microservicio solicitudes | `ms-solicitudes/` | **8081** | `solicitudes` |
+| Microservicio catálogo | `ms-catalogo/` | **8082** | `catalogo` |
+| MySQL 8.4 Docker | `infra/docker-compose.yml` | 3306 | Las dos bases |
+| RabbitMQ 4.0 Docker | `infra/docker-compose.yml` | 5672 / 15672 | Vhost `mesatech`. Exchange `catalogo.exchange`, cola `solicitudes.catalogo.queue` |
 
 En **local**, `REACT_APP_API_BASE_URL=http://localhost:8080` (el BFF).  
 En **AWS**, esa variable es la URL de **API Gateway**. Nunca la IP de un microservicio.
@@ -209,7 +211,7 @@ Spring valida **iss** (tenant) y **aud** (API). El claim `scp=access_as_user` se
 | --- | --- |
 | Angular + MSAL | **React + MSAL + Axios** (`frontend/`) |
 | Microsoft Entra ID | **Microsoft Entra ID** (Cognito queda descartado) |
-| Oracle Autonomous Database | **PostgreSQL 16 Docker en EC2** (`infra/`) |
+| Oracle Autonomous Database | **MySQL 8.4 Docker** (`infra/`). La entrega EV1 usó PostgreSQL 16 |
 | Pedidos / productos | **solicitudes** y **catálogo de soporte** |
 | Un backend genérico | BFF `:8080` + dos MS `:8081` / `:8082` |
 
@@ -218,6 +220,8 @@ La topología de la guía se mantiene: identidad aparte, Gateway al frente, BFF 
 ---
 
 ## Despliegue EV1 — 3 EC2 (equipo, us-east-1)
+
+Registro de la entrega EV1 (el motor de esa entrega fue PostgreSQL 16). En EP2 el motor es MySQL 8.4 en el puerto 3306; ver el mapeo de arriba.
 
 Topología elegida: **una EC2 por capa** (DB, MS, BFF). Región **us-east-1** (Learner Lab).
 

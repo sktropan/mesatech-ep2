@@ -7,8 +7,8 @@ Topología EV1: **3 instancias** (DB + MS + BFF). Ver [`TOPOLOGIA.md`](TOPOLOGIA
 | # | Tarea | Evidencia informe |
 | --- | --- | --- |
 | 1 | Instancia Ubuntu + IP pública | NIC-01, NIC-02 |
-| 2 | Java 17 + Docker | `java -version`, `docker ps` |
-| 3 | Postgres con compose EC2 | NIC-03, NIC-04 |
+| 2 | Java 21 + Docker | `java -version`, `docker ps` |
+| 3 | MySQL 8.4 con compose EC2 | NIC-03, NIC-04 |
 | 4 | Tres JARs corriendo | NIC-05 |
 | 5 | SG: 8081/8082 cerrados a Internet | NIC-08, NIC-09 |
 | 6 | BFF sin JWT → 401 | NIC-07 |
@@ -27,13 +27,19 @@ source ~/mesatech.env
 
 Pedir a **Ari**: `ENTRA_ISSUER_URI`, `ENTRA_AUDIENCE`.
 
-## 2. Postgres
+## 2. MySQL 8.4 y RabbitMQ
+
+RabbitMQ queda arriba con el mismo Compose (vhost `mesatech`). `ms-catalogo` publica y `ms-solicitudes` consume: cada unit de systemd lleva su `RABBITMQ_USER`. Pruebas: [`docs/pruebas-rabbitmq.md`](../../docs/pruebas-rabbitmq.md).
 
 ```bash
 cd ~/duoc-mesatech/infra
+cp .env.example .env
+# Editar .env si la clave de producción no es la de ejemplo
 docker compose -f docker-compose.yml -f docker-compose.ec2.yml up -d
 docker compose ps
 ```
+
+El override deja MySQL (`3306`) y RabbitMQ (`5672`, `15672`) solo en `127.0.0.1`.
 
 ## 3. Compilar JARs (en tu PC o en EC2)
 

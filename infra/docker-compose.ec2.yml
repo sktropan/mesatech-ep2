@@ -1,7 +1,12 @@
-# EC2: PostgreSQL accesible solo desde la instancia (127.0.0.1).
+# EC2: MySQL y RabbitMQ accesibles solo desde la instancia (127.0.0.1).
 # Uso: docker compose -f docker-compose.yml -f docker-compose.ec2.yml up -d
+# !override reemplaza los puertos del compose local (Compose los concatenaría).
 
 services:
-  postgres:
-    ports:
-      - "127.0.0.1:5432:5432"
+  mysql:
+    ports: !override
+      - "127.0.0.1:3306:3306"
+  rabbitmq:
+    ports: !override
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"

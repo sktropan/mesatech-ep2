@@ -1,6 +1,8 @@
 # Guía paso a paso — Nico (EC2, seguridad y presentación)
 
-**Tu misión:** subir BFF, microservicios y PostgreSQL a AWS; cerrar puertos para que solo Gateway llegue al BFF; demostrar **401** directo; armar la **presentación oral** del grupo.
+**Tu misión:** subir BFF, microservicios y MySQL 8.4 a AWS; cerrar puertos para que solo Gateway llegue al BFF; demostrar **401** directo; armar la **presentación oral** del grupo. RabbitMQ 4.0 sube con el Compose. `ms-catalogo` publica y `ms-solicitudes` consume: cada servicio con su `RABBITMQ_USER` (ver [`../../pruebas-rabbitmq.md`](../../pruebas-rabbitmq.md)).
+
+**EP2:** compilar con **Java 21**. Bases `catalogo` y `solicitudes`, variables `DB_URL`, `DB_USER`, `DB_PASSWORD`. Las casillas marcadas más abajo describen la entrega EV1 (allí el motor era PostgreSQL 16).
 
 **Bloques del plan:** C (despliegue), D (seguridad), P (presentación).
 
@@ -15,7 +17,7 @@
 | **EC2** | Un computador Linux en la nube (tu “servidor”). |
 | **Security Group (SG)** | Firewall: qué puertos aceptan conexiones y desde dónde. |
 | **SSH** | Forma de entrar al servidor por terminal (puerto 22). |
-| **Docker Compose** | Levanta PostgreSQL en contenedor en ese servidor. |
+| **Docker Compose** | Levanta MySQL 8.4 y RabbitMQ 4.0 en ese servidor. |
 | **JAR** | Archivo ejecutable Java (`mvn package`). |
 | **BFF :8080** | Puerta que Ninna conectará al Gateway. |
 | **MS :8081 / :8082** | Solo el BFF debe hablar con ellos, no Internet. |
@@ -26,7 +28,7 @@ flowchart LR
     BFF[BFF :8080]
     MS1[ms-solicitudes :8081]
     MS2[ms-catalogo :8082]
-    PG[(PostgreSQL Docker)]
+    PG[(MySQL 8.4)]
     Internet((Internet)) --> GW
     GW --> BFF
     BFF --> MS1
@@ -45,7 +47,7 @@ flowchart LR
 | --- | --- | --- |
 | 1 | `ENTRA_ISSUER_URI`, `ENTRA_AUDIENCE` | Ari |
 | 2 | Cuenta AWS + permiso EC2 | Equipo |
-| 3 | Java 17 y Maven en tu PC (para compilar) | Instalación local |
+| 3 | Java 21 y Maven en tu PC (para compilar) | Instalación local |
 | 4 | Par de claves `.pem` para SSH | Crear al lanzar EC2 — **no subir a Git** |
 | 5 | Repo `duoc-mesatech` | Git clone |
 
@@ -100,7 +102,7 @@ En la sesión SSH (Ubuntu):
 | Sub | Comando / acción |
 | --- | --- |
 | C.4.1 | `sudo apt update && sudo apt upgrade -y` |
-| C.4.2 | Instalar Java 17: `sudo apt install openjdk-17-jdk -y` → `java -version` |
+| C.4.2 | Instalar Java 21: `sudo apt install openjdk-21-jdk -y` → `java -version` |
 | C.4.3 | Instalar Docker: [documentación oficial Docker Engine Ubuntu](https://docs.docker.com/engine/install/ubuntu/) |
 | C.4.4 | Docker Compose plugin: `sudo apt install docker-compose-plugin -y` |
 | C.4.5 | Usuario en grupo docker: `sudo usermod -aG docker $USER` (re-login) |
@@ -109,19 +111,21 @@ Opcional: subir JARs con `scp` desde tu PC o clonar repo y compilar en EC2 (`git
 
 ---
 
-### Paso C.5 — PostgreSQL con Docker
+### Paso C.5 — MySQL 8.4 y RabbitMQ con Docker
 
 | Sub | Acción |
 | --- | --- |
 | C.5.1 | Clonar/copiar carpeta `infra/` a la EC2 |
-| C.5.2 | `cd infra && docker compose up -d` |
-| C.5.3 | `docker ps` → contenedor postgres activo |
-| C.5.4 | Verificar bases `mesatech_solicitudes` y `mesatech_catalogo` (según `init.sql`) |
+| C.5.2 | `cd infra && cp .env.example .env` y luego `docker compose -f docker-compose.yml -f docker-compose.ec2.yml up -d` |
+| C.5.3 | `docker ps` → contenedores `mesatech-mysql` y `mesatech-rabbitmq` activos |
+| C.5.4 | Verificar bases `catalogo` y `solicitudes` (las crea `init-databases.sh`) |
+
+RabbitMQ responde en el loopback (`15672`), vhost `mesatech`. En la unit de `ms-catalogo` pon `RABBITMQ_USER=catalogo`. En la de `ms-solicitudes`, `RABBITMQ_USER=solicitudes`. No uses el mismo usuario en los dos JAR.
 
 Adaptaciones habituales en EC2:
 
-- Volumen persistente para datos.
-- Password distinto a `mesatech/mesatech` de local → variable de entorno, **no** commitear.
+- Volúmenes persistentes (`mysql_data`, `rabbitmq_data`) y hostname fijo de cada contenedor.
+- Password distinto al de `.env.example` → solo en `.env`, **no** commitear.
 
 ---
 
@@ -152,11 +156,14 @@ export ENTRA_ISSUER_URI="https://login.microsoftonline.com/<TENANT>/v2.0"
 export ENTRA_AUDIENCE="<API_CLIENT_ID>"
 export MS_SOLICITUDES_URL="http://127.0.0.1:8081"
 export MS_CATALOGO_URL="http://127.0.0.1:8082"
-export POSTGRES_USER="mesatech"
-export POSTGRES_PASSWORD="<password-seguro>"
+export DB_USER="mesatech"
+export DB_PASSWORD="<password-seguro>"
+# DB_URL solo si MySQL no está en esta máquina. Una por servicio, no las dos a la vez:
+# ms-solicitudes → jdbc:mysql://<IP_PRIVADA_DB>:3306/solicitudes
+# ms-catalogo    → jdbc:mysql://<IP_PRIVADA_DB>:3306/catalogo
 ```
 
-Los MS leen JDBC en `application.properties` — confirma host `localhost:5432` en EC2.
+Los MS leen JDBC en `application.properties`. Sin `DB_URL`, cada uno usa su default: `localhost:3306/solicitudes` o `localhost:3306/catalogo`. No hay dialecto Hibernate fijo.
 
 ---
 
@@ -190,7 +197,8 @@ java -jar ~/apps/ms-catalogo-....jar --server.port=8082
 | 8080 | BFF | Idealmente **no** abierto a 0.0.0.0/0 | Tráfico vía Gateway (ver nota) |
 | 8081 | ms-solicitudes | **No** | Solo SG de la misma instancia / BFF |
 | 8082 | ms-catalogo | **No** | Idem |
-| 5432 | PostgreSQL | **No** | Solo localhost/docker |
+| 3306 | MySQL 8.4 | **No** | Solo localhost/docker o SG de los MS |
+| 5672 / 15672 | RabbitMQ | **No** | Solo localhost. Los JAR usan el vhost `mesatech` |
 
 **Nota EP1:** el profesor pide que acceso directo a BFF/MS desde Internet dé **401** o esté bloqueado. Estrategias:
 
@@ -255,7 +263,7 @@ La exposición oral usa [`entregables/presentacion/index.html`](../../../entrega
 | 5 | Entra ID — roles | Consentimiento, scope y tres roles | Ari (capturas) |
 | 6 | JWT | Qué valida Gateway y BFF | Ari o Nico |
 | 7 | API Gateway | Rutas, Authorizer, CORS | Ninna |
-| 8 | EC2 + Postgres | Docker, 3 JARs | Nico |
+| 8 | EC2 + MySQL | Docker, 3 JARs | Nico |
 | 9 | Seguridad 401 | SG + prueba directa | Nico |
 | 10 | React login | Captura | Skarlet |
 | 11 | Roles / 403 | Cliente vs operador vs admin | Skarlet |
@@ -322,12 +330,14 @@ Entrega: `capturas/nico/` → `NIC-01.png` …
 
 ---
 
-### NIC-03 / NIC-04 — PostgreSQL Docker
+### NIC-03 / NIC-04 — persistencia Docker
+
+La captura marcada de la EV1 muestra PostgreSQL 16. En EP2 la misma evidencia es `docker ps` con **mysql:8.4** (`mesatech-mysql`, puerto 3306) y, si se quiere mostrar el broker, `mesatech-rabbitmq`.
 
 | Paso | Acción |
 | --- | --- |
 | 1 | SSH a la instancia |
-| 2 | `docker ps` → captura contenedor **postgres** puerto 5432 |
+| 2 | `docker ps` → captura contenedor **mesatech-mysql** (imagen `mysql:8.4`) puerto 3306. La captura ya entregada en EV1 mostró `postgres:16` en 5432 |
 | 3 | NIC-04: `docker compose -f ~/infra/docker-compose.yml ps` o listado volúmenes |
 | 4 | **No** capturar password en `env.sh`; tapar con editor si aparece en terminal |
 
@@ -396,7 +406,7 @@ Prueba §11 #9.
 | Paso | Acción |
 | --- | --- |
 | 1 | Exportar diagrama actualizado (Draw.io / PNG del repo) |
-| 2 | Debe incluir: Invoke URL, IP EC2, puertos 8080–8082, Postgres |
+| 2 | Debe incluir: Invoke URL, IP EC2, puertos 8080–8082 y MySQL 8.4 (en la figura EV1 aparece Postgres) |
 | 3 | Figura en informe §12 “diagrama breve” |
 
 ---
@@ -453,7 +463,7 @@ Seleccionar **2–3** por bloque (no todas): NIC-01, NIC-03, NIC-07, NIC-09, dia
 | --- | --- |
 | Ver puertos escuchando | `ss -tlnp` |
 | Logs jar en foreground | salida directa en terminal |
-| Reiniciar postgres | `cd infra && docker compose restart` |
+| Reiniciar MySQL y RabbitMQ | `cd infra && docker compose restart` |
 | Copiar archivo a EC2 | `scp -i key.pem file ubuntu@ip:~/` |
 
 Onboarding local (para practicar antes): [`../../onboarding/refs-y-entorno.md`](../../onboarding/refs-y-entorno.md).
