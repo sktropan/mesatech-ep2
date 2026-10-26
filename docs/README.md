@@ -40,6 +40,7 @@ En la **raíz del repo** solo queda `README.md` como entrada; el resto de docume
 | 7 | [Entra + Spring + React (19 pasos)](guia/entra-spring-react.md) | Ari, quien toque JWT |
 | 8 | [Anotaciones del profesor](contexto/anotaciones-profesor.md) | Decisiones vs guía escrita |
 | 9 | [Glosario cloud/JWT](glosario/README.md) | Informe y presentación |
+| 9b | [Pruebas RabbitMQ](pruebas-rabbitmq.md) | Crear categoría, ver mensaje, copia y error 503 |
 | 10 | [Diccionario de dominio](dominio/README.md) | Skarlet, front, APIs |
 
 ---
@@ -74,6 +75,6 @@ docs/
 | `bff/` | 8080 | Resource Server, sin JPA |
 | `ms-solicitudes/` | 8081 | MySQL 8.4, base `solicitudes` |
 | `ms-catalogo/` | 8082 | MySQL 8.4, base `catalogo` |
-| `infra/` | 3306, 5672, 15672 | `docker compose up -d` (MySQL + RabbitMQ; el código aún no usa el broker) |
+| `infra/` | 3306, 5672, 15672 | `docker compose up -d` (MySQL + RabbitMQ, vhost `mesatech`) |
 
 Plantillas de variables: `env.example`, `frontend/.env.example`.

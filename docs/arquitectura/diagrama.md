@@ -2,12 +2,13 @@
 
 Arquitectura de la solución que vamos a entregar, alineada a la guía, a las anotaciones del profesor y al **monorepo ya creado**.
 
-**IDaaS:** Microsoft Entra ID (Azure) · **Front:** React + MSAL + Axios · **Entrada:** AWS API Gateway · **Orquestación:** BFF Spring Boot (Java 21) · **Dominio:** `ms-solicitudes` + `ms-catalogo` · **Datos:** MySQL 8.4 en Docker (bases `solicitudes` y `catalogo`). RabbitMQ 4.0 está en el Compose y todavía no participa en el flujo.
+**IDaaS:** Microsoft Entra ID (Azure) · **Front:** React + MSAL + Axios · **Entrada:** AWS API Gateway · **Orquestación:** BFF Spring Boot (Java 21) · **Dominio:** `ms-solicitudes` + `ms-catalogo` · **Datos:** MySQL 8.4 en Docker (bases `solicitudes` y `catalogo`). Al crear una categoría, `ms-catalogo` publica `categoria.creada` en RabbitMQ y `ms-solicitudes` guarda una copia.
 
 ```text
 React + MSAL  →  Entra ID (login / JWT)
 React + MSAL  →  API Gateway  →  BFF :8080  →  ms-solicitudes :8081  →  MySQL (solicitudes)
                                          └→  ms-catalogo    :8082  →  MySQL (catalogo)
+ms-catalogo  -- categoria.creada -->  catalogo.exchange  -->  solicitudes.catalogo.queue  -->  ms-solicitudes
 ```
 
 **Regla de seguridad:** React solo habla con API Gateway (en AWS) o, en local, con el BFF. Un acceso directo a `:8080`, `:8081` o `:8082` sin JWT válido responde **401**.
@@ -75,7 +76,7 @@ flowchart LR
 | Microservicio solicitudes | `ms-solicitudes/` | **8081** | `solicitudes` |
 | Microservicio catálogo | `ms-catalogo/` | **8082** | `catalogo` |
 | MySQL 8.4 Docker | `infra/docker-compose.yml` | 3306 | Las dos bases |
-| RabbitMQ 4.0 Docker | `infra/docker-compose.yml` | 5672 / 15672 | Aún sin clientes Java |
+| RabbitMQ 4.0 Docker | `infra/docker-compose.yml` | 5672 / 15672 | Vhost `mesatech`. Exchange `catalogo.exchange`, cola `solicitudes.catalogo.queue` |
 
 En **local**, `REACT_APP_API_BASE_URL=http://localhost:8080` (el BFF).  
 En **AWS**, esa variable es la URL de **API Gateway**. Nunca la IP de un microservicio.

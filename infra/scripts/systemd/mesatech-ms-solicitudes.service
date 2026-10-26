@@ -8,6 +8,12 @@ User=ubuntu
 EnvironmentFile=/home/ubuntu/mesatech.env
 # Si MySQL no está en localhost, descomenta y pon la IP privada de la EC2 de datos.
 # Environment=DB_URL=jdbc:mysql://<IP_PRIVADA_DB>:3306/solicitudes
+# Este JAR consume. No uses el usuario de ms-catalogo.
+# Environment=RABBITMQ_HOST=127.0.0.1
+# Environment=RABBITMQ_PORT=5672
+# Environment=RABBITMQ_VHOST=mesatech
+# Environment=RABBITMQ_USER=solicitudes
+# Environment=RABBITMQ_PASSWORD=solicitudes-dev
 WorkingDirectory=/home/ubuntu/apps
 ExecStart=/usr/bin/java -jar /home/ubuntu/apps/ms-solicitudes.jar
 Restart=on-failure

@@ -11,7 +11,7 @@ Documento para informe y configuración en consola AWS.
 | 8081 | — | **No** Internet | ms-solicitudes | Solo localhost / SG interno |
 | 8082 | — | **No** Internet | ms-catalogo | Solo localhost / SG interno |
 | 3306 | — | **No** Internet | MySQL 8.4 | Solo 127.0.0.1 o SG de los MS (`docker-compose.ec2.yml`) |
-| 5672 | — | **No** Internet | RabbitMQ AMQP | Igual. El código Java aún no lo usa |
+| 5672 | — | **No** Internet | RabbitMQ AMQP | Igual. Los JAR se conectan por localhost al vhost `mesatech` |
 | 15672 | — | **No** Internet | Consola RabbitMQ | Solo loopback |
 
 ## Regla EP1

@@ -1,6 +1,6 @@
 # Guía paso a paso — Nico (EC2, seguridad y presentación)
 
-**Tu misión:** subir BFF, microservicios y MySQL 8.4 a AWS; cerrar puertos para que solo Gateway llegue al BFF; demostrar **401** directo; armar la **presentación oral** del grupo. RabbitMQ 4.0 sube con el Compose y el código Java todavía no lo usa.
+**Tu misión:** subir BFF, microservicios y MySQL 8.4 a AWS; cerrar puertos para que solo Gateway llegue al BFF; demostrar **401** directo; armar la **presentación oral** del grupo. RabbitMQ 4.0 sube con el Compose. `ms-catalogo` publica y `ms-solicitudes` consume: cada servicio con su `RABBITMQ_USER` (ver [`../../pruebas-rabbitmq.md`](../../pruebas-rabbitmq.md)).
 
 **EP2:** compilar con **Java 21**. Bases `catalogo` y `solicitudes`, variables `DB_URL`, `DB_USER`, `DB_PASSWORD`. Las casillas marcadas más abajo describen la entrega EV1 (allí el motor era PostgreSQL 16).
 
@@ -120,7 +120,7 @@ Opcional: subir JARs con `scp` desde tu PC o clonar repo y compilar en EC2 (`git
 | C.5.3 | `docker ps` → contenedores `mesatech-mysql` y `mesatech-rabbitmq` activos |
 | C.5.4 | Verificar bases `catalogo` y `solicitudes` (las crea `init-databases.sh`) |
 
-RabbitMQ responde en el loopback (`15672`). No hace falta configurarlo en los JAR: esta entrega no lo usa desde Java.
+RabbitMQ responde en el loopback (`15672`), vhost `mesatech`. En la unit de `ms-catalogo` pon `RABBITMQ_USER=catalogo`. En la de `ms-solicitudes`, `RABBITMQ_USER=solicitudes`. No uses el mismo usuario en los dos JAR.
 
 Adaptaciones habituales en EC2:
 
@@ -198,7 +198,7 @@ java -jar ~/apps/ms-catalogo-....jar --server.port=8082
 | 8081 | ms-solicitudes | **No** | Solo SG de la misma instancia / BFF |
 | 8082 | ms-catalogo | **No** | Idem |
 | 3306 | MySQL 8.4 | **No** | Solo localhost/docker o SG de los MS |
-| 5672 / 15672 | RabbitMQ | **No** | Solo localhost. El código aún no lo usa |
+| 5672 / 15672 | RabbitMQ | **No** | Solo localhost. Los JAR usan el vhost `mesatech` |
 
 **Nota EP1:** el profesor pide que acceso directo a BFF/MS desde Internet dé **401** o esté bloqueado. Estrategias:
 

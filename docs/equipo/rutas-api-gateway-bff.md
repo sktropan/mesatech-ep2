@@ -15,6 +15,7 @@ En **cloud**, la misma variable = **Invoke URL** del Gateway (sin barra final), 
 | GET | `/v1/solicitudes` | **Operador** o **Administrador** → si no, **403** | `App.js` (bandeja general) |
 | PATCH | `/v1/solicitudes/{id}/estado` | **Operador** o **Administrador** → si no, **403** | `TablaSolicitudes` |
 | GET | `/v1/catalogo` | Cualquier autenticado (formulario) | `App.js` |
+| GET | `/v1/categorias-catalogo` | Cualquier autenticado (copia que guardó ms-solicitudes) | `App.js` → menú Copia catálogo |
 | POST | `/v1/catalogo/categorias` | **Administrador** → si no, **403** | `PanelCatalogo` |
 | PUT | `/v1/catalogo/categorias/{id}` | **Administrador** → si no, **403** | `PanelCatalogo` |
 | DELETE | `/v1/catalogo/categorias/{id}` | **Administrador** → si no, **403** | `PanelCatalogo` |
@@ -45,7 +46,15 @@ Integración HTTP al BFF `:8080`, mismo JWT Authorizer que el resto de negocio:
 | PUT | `/v1/catalogo/prioridades/{id}` |
 | DELETE | `/v1/catalogo/prioridades/{id}` |
 
-Path parameter `{id}` numérico (ID JPA). Sin estas rutas, editar/eliminar desde React devuelve **404** en Gateway aunque BFF/MS estén actualizados.
+### Ruta nueva EP2 — copia de categorías
+
+| Método | Path | Integración | Quién |
+| --- | --- | --- | --- |
+| GET | `/v1/categorias-catalogo` | HTTP al BFF `:8080`, mismo path, JWT Authorizer | Cualquier autenticado. El BFF llama a `ms-solicitudes`. |
+
+Sin esta ruta, el menú **Copia catálogo** del React devuelve **404** en la nube aunque el BFF responda bien en local. No hace falta rol extra en Gateway.
+
+Path parameter `{id}` numérico (ID JPA). Sin las rutas de la tabla anterior, editar/eliminar desde React devuelve **404** en Gateway aunque BFF/MS estén actualizados.
 
 CloudShell — script bash: **no** uses la variable `PATH` para el path de la ruta (pisa `$PATH` del sistema y `aws` deja de existir). Usa `ROUTE_PATH` (ver comentario en [`guias/ninna-gateway-marca-versiones.md`](guias/ninna-gateway-marca-versiones.md) si se documenta el snippet).
 

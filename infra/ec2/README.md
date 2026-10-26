@@ -29,7 +29,7 @@ Pedir a **Ari**: `ENTRA_ISSUER_URI`, `ENTRA_AUDIENCE`.
 
 ## 2. MySQL 8.4 y RabbitMQ
 
-RabbitMQ queda arriba con el mismo Compose. Los JAR todavía no publican ni consumen mensajes.
+RabbitMQ queda arriba con el mismo Compose (vhost `mesatech`). `ms-catalogo` publica y `ms-solicitudes` consume: cada unit de systemd lleva su `RABBITMQ_USER`. Pruebas: [`docs/pruebas-rabbitmq.md`](../../docs/pruebas-rabbitmq.md).
 
 ```bash
 cd ~/duoc-mesatech/infra

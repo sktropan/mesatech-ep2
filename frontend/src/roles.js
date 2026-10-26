@@ -53,7 +53,10 @@ export function etiquetaRol(roles) {
 }
 
 export function navDesdePermisos(permisos) {
-  const items = [{ id: "mias", label: "Mis solicitudes" }];
+  const items = [
+    { id: "mias", label: "Mis solicitudes" },
+    { id: "copia", label: "Copia catálogo" },
+  ];
   if (permisos.verTodas) {
     items.push({ id: "todas", label: "Bandeja general" });
   }

@@ -25,9 +25,20 @@ if (-not $env:DB_USER) { $env:DB_USER = "mesatech" }
 if (-not $env:DB_PASSWORD) { $env:DB_PASSWORD = "mesatech" }
 if (-not $env:MS_SOLICITUDES_URL) { $env:MS_SOLICITUDES_URL = "http://localhost:8081" }
 if (-not $env:MS_CATALOGO_URL) { $env:MS_CATALOGO_URL = "http://localhost:8082" }
+if (-not $env:RABBITMQ_HOST) { $env:RABBITMQ_HOST = "localhost" }
+if (-not $env:RABBITMQ_PORT) { $env:RABBITMQ_PORT = "5672" }
+if (-not $env:RABBITMQ_VHOST) { $env:RABBITMQ_VHOST = "mesatech" }
+if (-not $env:RABBITMQ_CATALOGO_PASSWORD) { $env:RABBITMQ_CATALOGO_PASSWORD = "catalogo-dev" }
+if (-not $env:RABBITMQ_SOLICITUDES_PASSWORD) { $env:RABBITMQ_SOLICITUDES_PASSWORD = "solicitudes-dev" }
 
 function Start-MesatechJob {
-    param([string]$Name, [string]$Jar, [string]$DbUrl)
+    param(
+        [string]$Name,
+        [string]$Jar,
+        [string]$DbUrl,
+        [string]$RabbitUser,
+        [string]$RabbitPassword
+    )
     $jarPath = Join-Path $RepoRoot "infra\out\$Jar"
     if (-not (Test-Path $jarPath)) { throw "Falta $jarPath — ejecuta .\infra\scripts\build-jars.ps1" }
     $log = Join-Path $LogDir "$Name.log"
@@ -48,14 +59,22 @@ function Start-MesatechJob {
     }
     # Cada MS tiene su base. No reutilizar un único DB_URL del proceso padre.
     if ($DbUrl) { $envMap["DB_URL"] = $DbUrl }
+    # Cada MS tiene su usuario de RabbitMQ. El BFF no se conecta al broker.
+    if ($RabbitUser) {
+        $envMap["RABBITMQ_HOST"] = $env:RABBITMQ_HOST
+        $envMap["RABBITMQ_PORT"] = $env:RABBITMQ_PORT
+        $envMap["RABBITMQ_VHOST"] = $env:RABBITMQ_VHOST
+        $envMap["RABBITMQ_USER"] = $RabbitUser
+        $envMap["RABBITMQ_PASSWORD"] = $RabbitPassword
+    }
     $job = Start-Job -Name $Name -ScriptBlock $script -ArgumentList $RepoRoot, $jarPath, $log, $envMap
     Write-Host "Job $Name (Id $($job.Id)) — log: $log"
 }
 
-Start-MesatechJob "ms-solicitudes" "ms-solicitudes.jar" "jdbc:mysql://localhost:3306/solicitudes"
+Start-MesatechJob "ms-solicitudes" "ms-solicitudes.jar" "jdbc:mysql://localhost:3306/solicitudes" "solicitudes" $env:RABBITMQ_SOLICITUDES_PASSWORD
 Start-Sleep -Seconds 12
-Start-MesatechJob "ms-catalogo" "ms-catalogo.jar" "jdbc:mysql://localhost:3306/catalogo"
+Start-MesatechJob "ms-catalogo" "ms-catalogo.jar" "jdbc:mysql://localhost:3306/catalogo" "catalogo" $env:RABBITMQ_CATALOGO_PASSWORD
 Start-Sleep -Seconds 12
-Start-MesatechJob "bff" "bff.jar" ""
+Start-MesatechJob "bff" "bff.jar" "" "" ""
 Write-Host "Espera ~20s. Prueba: curl.exe -i http://127.0.0.1:8080/public/hola"
 Write-Host "Jobs: Get-Job | Format-Table"

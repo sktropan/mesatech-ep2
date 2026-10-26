@@ -1,6 +1,7 @@
 # Local: MySQL 8.4 + RabbitMQ 4.0.
 # Credenciales solo en infra/.env (copiar desde .env.example). Ese archivo no se versiona.
-# Los backends todavía no publican ni consumen mensajes: RabbitMQ queda preparado.
+# El vhost mesatech, los usuarios y la topología salen de infra/rabbitmq/ (definitions).
+# ms-catalogo publica con el usuario catalogo. ms-solicitudes consume con el usuario solicitudes.
 
 services:
   mysql:
@@ -33,17 +34,22 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    entrypoint: ["/bin/bash", "/etc/rabbitmq/entrypoint.sh"]
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?Definir RABBITMQ_DEFAULT_USER en infra/.env}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Definir RABBITMQ_DEFAULT_PASS en infra/.env}
+      RABBITMQ_CATALOGO_PASSWORD: ${RABBITMQ_CATALOGO_PASSWORD:?Definir RABBITMQ_CATALOGO_PASSWORD en infra/.env}
+      RABBITMQ_SOLICITUDES_PASSWORD: ${RABBITMQ_SOLICITUDES_PASSWORD:?Definir RABBITMQ_SOLICITUDES_PASSWORD en infra/.env}
+      RABBITMQ_UI_PASSWORD: ${RABBITMQ_UI_PASSWORD:?Definir RABBITMQ_UI_PASSWORD en infra/.env}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/definitions.template.json:/etc/rabbitmq/definitions.template.json:ro
+      - ./rabbitmq/entrypoint.sh:/etc/rabbitmq/entrypoint.sh:ro
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping && rabbitmqctl list_vhosts | grep -qw mesatech"]
       interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
+      timeout: 10s
+      retries: 12
+      start_period: 40s
 
 volumes:
   mysql_data:

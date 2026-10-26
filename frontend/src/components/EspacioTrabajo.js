@@ -1,6 +1,7 @@
 import FormCrearSolicitud from "./FormCrearSolicitud";
 import TablaSolicitudes from "./TablaSolicitudes";
 import PanelCatalogo from "./PanelCatalogo";
+import PanelCopiaCatalogo from "./PanelCopiaCatalogo";
 
 export default function EspacioTrabajo({
   aviso,
@@ -20,6 +21,8 @@ export default function EspacioTrabajo({
   onCrearPrioridad,
   onActualizarPrioridad,
   onEliminarPrioridad,
+  copiaCatalogo,
+  onActualizarCopia,
 }) {
   return (
     <>
@@ -56,6 +59,14 @@ export default function EspacioTrabajo({
           puedeCambiarEstado={permisos.cambiarEstado}
           onCambiarEstado={onCambiarEstado}
           onTransicionInvalida={onTransicionInvalida}
+        />
+      )}
+
+      {vista === "copia" && (
+        <PanelCopiaCatalogo
+          categorias={copiaCatalogo}
+          onActualizar={onActualizarCopia}
+          ocupado={ocupado}
         />
       )}
 

@@ -170,7 +170,7 @@ Nico (presentación)
 
 ## Nico — C. Despliegue EC2 + D. Seguridad y arquitectura
 
-**Objetivo:** BFF + 2 MS + MySQL 8.4 en EC2; acceso directo a MS (y BFF si aplica) → 401 o bloqueo de red. RabbitMQ 4.0 va en el mismo Compose y el código aún no lo usa.
+**Objetivo:** BFF + 2 MS + MySQL 8.4 en EC2; acceso directo a MS (y BFF si aplica) → 401 o bloqueo de red. RabbitMQ 4.0 va en el mismo Compose. `ms-catalogo` publica `categoria.creada` y `ms-solicitudes` guarda la copia.
 
 **Prerrequisito:** Ari entregó `ENTRA_ISSUER_URI` y `ENTRA_AUDIENCE`.
 
@@ -181,7 +181,7 @@ Nico (presentación)
    - **BFF** `:8080`
    - **ms-solicitudes** `:8081`
    - **ms-catalogo** `:8082`
-3. **MySQL 8.4** con `infra/docker-compose.yml` (en `infra/`: `cp .env.example .env`). En EC2, el override publica solo loopback. RabbitMQ 4.0 sube junto, sin clientes Java todavía.
+3. **MySQL 8.4** con `infra/docker-compose.yml` (en `infra/`: `cp .env.example .env`). En EC2, el override publica solo loopback. RabbitMQ 4.0 sube junto (vhost `mesatech`). Cada JAR lleva su `RABBITMQ_USER`.
 4. Bases: `solicitudes`, `catalogo`.
 5. Variables en EC2:
    - `ENTRA_ISSUER_URI`, `ENTRA_AUDIENCE`

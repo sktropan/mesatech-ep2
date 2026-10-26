@@ -1,6 +1,6 @@
 # MesaTech Cloud — EV1 (DSY1107)
 
-Monorepo MesaTech: React + **Microsoft Entra ID** + **AWS API Gateway** + BFF y microservicios Spring Boot (**Java 21**) en **EC2**, con **MySQL 8.4** en Docker. **RabbitMQ 4.0** está en el Compose local y todavía no lo usa el código.
+Monorepo MesaTech: React + **Microsoft Entra ID** + **AWS API Gateway** + BFF y microservicios Spring Boot (**Java 21**) en **EC2**, con **MySQL 8.4** y **RabbitMQ 4.0** en Docker. Al crear una categoría, `ms-catalogo` publica `categoria.creada` y `ms-solicitudes` guarda una copia.
 
 Equipo: **Ari**, **Ninna**, **Nico**, **Skarlet**.
 
@@ -24,6 +24,7 @@ Toda la guía del proyecto está en **[`docs/README.md`](docs/README.md)**:
 | [Guía oficial EP1](docs/caso/ep1-guia-oficial.md) | Rúbrica, pruebas §10–§15 |
 | [Glosario](docs/glosario/README.md) · [Dominio](docs/dominio/README.md) | Conceptos cloud y negocio |
 | [Arquitectura](docs/arquitectura/diagrama.md) | Flujos y diagrama |
+| [Pruebas RabbitMQ](docs/pruebas-rabbitmq.md) | Crear categoría, ver el mensaje, ver la copia y el 503 |
 | **[Reglas del repositorio](docs/equipo/reglas-repositorio.md)** | **Git, commits, PR y reglas EV1 (todo el equipo)** |
 | [Convenciones de desarrollo](docs/equipo/convenciones-desarrollo.md) | Detalle por carpeta (`bff/`, `frontend/`, …) |
 | [Estrategia Git / branching](docs/equipo/estrategia-branching.md) | Ramas, PRs y tag `ev1.0.0` |
@@ -38,7 +39,7 @@ Toda la guía del proyecto está en **[`docs/README.md`](docs/README.md)**:
 | `bff/` | 8080 | OAuth2 Resource Server, **sin JPA**, proxy a MS |
 | `ms-solicitudes/` | 8081 | Solicitudes y reglas de estado |
 | `ms-catalogo/` | 8082 | Categorías y prioridades |
-| `infra/` | 3306, 5672, 15672 | `docker compose` — MySQL 8.4 y RabbitMQ 4.0; despliegue EC2 en [`infra/ec2/README.md`](infra/ec2/README.md) |
+| `infra/` | 3306, 5672, 15672 | `docker compose` — MySQL 8.4 y RabbitMQ 4.0 (vhost `mesatech`); EC2 en [`infra/ec2/README.md`](infra/ec2/README.md) |
 
 Origen conceptual: repos de ejemplo del profesor (ver onboarding); código entregable solo en las carpetas anteriores.
 

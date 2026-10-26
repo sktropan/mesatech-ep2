@@ -1,0 +1,80 @@
+{
+  "vhosts": [
+    { "name": "mesatech" }
+  ],
+  "users": [
+    {
+      "name": "catalogo",
+      "password": "__CATALOGO_PASSWORD__",
+      "tags": []
+    },
+    {
+      "name": "solicitudes",
+      "password": "__SOLICITUDES_PASSWORD__",
+      "tags": []
+    },
+    {
+      "name": "mesatech-ui",
+      "password": "__UI_PASSWORD__",
+      "tags": ["management"]
+    },
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": []
+    }
+  ],
+  "permissions": [
+    {
+      "user": "catalogo",
+      "vhost": "mesatech",
+      "configure": "^catalogo\\.exchange$",
+      "write": "^catalogo\\.exchange$",
+      "read": "^$"
+    },
+    {
+      "user": "solicitudes",
+      "vhost": "mesatech",
+      "configure": "^(catalogo\\.exchange|solicitudes\\.catalogo\\.queue)$",
+      "write": "^solicitudes\\.catalogo\\.queue$",
+      "read": "^(catalogo\\.exchange|solicitudes\\.catalogo\\.queue)$"
+    },
+    {
+      "user": "mesatech-ui",
+      "vhost": "mesatech",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "catalogo.exchange",
+      "vhost": "mesatech",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "solicitudes.catalogo.queue",
+      "vhost": "mesatech",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "catalogo.exchange",
+      "vhost": "mesatech",
+      "destination": "solicitudes.catalogo.queue",
+      "destination_type": "queue",
+      "routing_key": "categoria.creada",
+      "arguments": {}
+    }
+  ]
+}

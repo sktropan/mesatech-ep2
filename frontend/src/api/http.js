@@ -21,6 +21,9 @@ function mensajeDesdeError(err) {
   if (status === 409 && data?.message) {
     return data.message;
   }
+  if (status === 503) {
+    return data?.message || "El servicio de mensajería no está disponible. Intente de nuevo.";
+  }
 
   if (typeof data === "string" && data.trim()) {
     return data;

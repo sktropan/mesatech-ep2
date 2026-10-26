@@ -58,7 +58,7 @@ Las Partes B y C de `entra-spring-react.md` (Spring Initializr / React desde cer
 **Prerrequisito:** variables Entra de Ari.
 
 1. EC2: desplegar JARs BFF `:8080`, MS `:8081` / `:8082`.
-2. MySQL 8.4 (y RabbitMQ 4.0, aún sin uso en Java) con [`../../infra/docker-compose.yml`](../../infra/docker-compose.yml) adaptado en la instancia. Antes: `cp .env.example .env` dentro de `infra/`.
+2. MySQL 8.4 y RabbitMQ 4.0 con [`../../infra/docker-compose.yml`](../../infra/docker-compose.yml) adaptado en la instancia. Antes: `cp .env.example .env` dentro de `infra/`. El flujo del evento está en [`../pruebas-rabbitmq.md`](../pruebas-rabbitmq.md).
 3. Variables: `ENTRA_*`, `MS_SOLICITUDES_URL`, `MS_CATALOGO_URL`, `DB_USER`, `DB_PASSWORD`. `DB_URL` solo si la base no está en localhost, y una URL distinta por microservicio (`catalogo` y `solicitudes`).
 4. Evidencias: servicios activos, datos persisten.
 

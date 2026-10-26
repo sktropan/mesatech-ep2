@@ -4,6 +4,7 @@ import cl.duoc.mesatech.catalogo.domain.Categoria;
 import cl.duoc.mesatech.catalogo.domain.Prioridad;
 import cl.duoc.mesatech.catalogo.repo.CategoriaRepository;
 import cl.duoc.mesatech.catalogo.repo.PrioridadRepository;
+import cl.duoc.mesatech.catalogo.service.CategoriaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +23,16 @@ public class CatalogoController {
 
     private final CategoriaRepository categorias;
     private final PrioridadRepository prioridades;
+    private final CategoriaService categoriaService;
 
-    public CatalogoController(CategoriaRepository categorias, PrioridadRepository prioridades) {
+    public CatalogoController(
+            CategoriaRepository categorias,
+            PrioridadRepository prioridades,
+            CategoriaService categoriaService
+    ) {
         this.categorias = categorias;
         this.prioridades = prioridades;
+        this.categoriaService = categoriaService;
     }
 
     @GetMapping("/v1/catalogo")
@@ -38,8 +45,7 @@ public class CatalogoController {
 
     @PostMapping("/v1/catalogo/categorias")
     public Categoria crearCategoria(@RequestBody Categoria body) {
-        body.setId(null);
-        return categorias.save(body);
+        return categoriaService.crearCategoria(body);
     }
 
     @PostMapping("/v1/catalogo/prioridades")

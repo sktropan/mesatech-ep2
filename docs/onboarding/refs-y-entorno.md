@@ -131,7 +131,7 @@ REACT_APP_ENTRA_API_SCOPE
 REACT_APP_API_BASE_URL   ← en AWS es la URL del Gateway; no commitear IPs
 DB_USER / DB_PASSWORD           ← si se cambian respecto del example
 DB_URL                          ← solo si no usas el default local de cada MS
-MYSQL_* / RABBITMQ_DEFAULT_*    ← infra/.env (Compose); no versionar
+MYSQL_* / RABBITMQ_*_PASSWORD   ← infra/.env (Compose); no versionar
 MS_SOLICITUDES_URL / MS_CATALOGO_URL
 ```
 
@@ -207,7 +207,7 @@ Requisitos: Java 21, Maven, Node.js (LTS), Docker.
    docker compose up -d
    ```
 
-   Crea las bases `catalogo` y `solicitudes`. RabbitMQ queda en marcha; los JAR todavía no se conectan.
+   Crea las bases `catalogo` y `solicitudes`. RabbitMQ crea el vhost `mesatech`. Cada JAR usa su usuario: ver [`../pruebas-rabbitmq.md`](../pruebas-rabbitmq.md).
 
 4. Exportar variables (PowerShell) y arrancar los tres Spring Boot **en terminales distintas**:
 
@@ -250,6 +250,7 @@ Las referencias del profesor solo cubren login + `/api/usuario`. El dominio Mesa
 | `GET` | `/v1/catalogo` | BFF → `ms-catalogo` |
 | `POST` | `/v1/catalogo/categorias` | BFF → `ms-catalogo` |
 | `POST` | `/v1/catalogo/prioridades` | BFF → `ms-catalogo` |
+| `GET` | `/v1/categorias-catalogo` | BFF → `ms-solicitudes` (copia del evento `categoria.creada`) |
 
 Regla de negocio: no se puede pasar a **RESUELTA** si el estado no es **EN_PROCESO**.
 

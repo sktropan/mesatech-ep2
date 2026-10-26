@@ -16,6 +16,7 @@ function App() {
   const [catalogo, setCatalogo] = useState({ categorias: [], prioridades: [] });
   const [mias, setMias] = useState([]);
   const [todas, setTodas] = useState([]);
+  const [copiaCatalogo, setCopiaCatalogo] = useState([]);
   const [vista, setVista] = useState("mias");
   const [mensaje, setMensaje] = useState(null);
   const [ocupado, setOcupado] = useState(false);
@@ -39,12 +40,14 @@ function App() {
       const usuario = await apiGet(instance, cuenta, "/api/usuario");
       setSesionApi(usuario);
 
-      const [miasData, catalogoData] = await Promise.all([
+      const [miasData, catalogoData, copiaData] = await Promise.all([
         apiGet(instance, cuenta, "/v1/solicitudes/mias"),
         apiGet(instance, cuenta, "/v1/catalogo"),
+        apiGet(instance, cuenta, "/v1/categorias-catalogo"),
       ]);
       setMias(Array.isArray(miasData) ? miasData : []);
       setCatalogo(catalogoData || { categorias: [], prioridades: [] });
+      setCopiaCatalogo(Array.isArray(copiaData) ? copiaData : []);
 
       const puedeVerTodas = permisosDesdeRoles(usuario.roles).verTodas;
       if (puedeVerTodas) {
@@ -189,6 +192,8 @@ function App() {
                 "La prioridad fue eliminada."
               )
             }
+            copiaCatalogo={copiaCatalogo}
+            onActualizarCopia={() => ejecutar(async () => {}, null)}
           />
         </Layout>
       </AuthenticatedTemplate>

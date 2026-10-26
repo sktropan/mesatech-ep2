@@ -50,7 +50,7 @@ Términos que aparecen en la guía EP1, el informe y la arquitectura MesaTech. P
 | **Microservicio** | Servicio de dominio independiente con su persistencia. | `ms-solicitudes`, `ms-catalogo`. |
 | **Versionamiento de API** | Convivencia de `/v1` y `/v2` con contratos distintos. | v2 envoltorio en `GET …/mias`. |
 | **MySQL 8.4** | Motor relacional. Hibernate detecta el dialecto por la URL JDBC; no hay dialecto fijo en `application.properties`. | Docker `infra/`; bases `catalogo` y `solicitudes`. |
-| **RabbitMQ 4.0** | Broker de mensajes. | Contenedor `rabbitmq:4.0-management` en `infra/`. El código Java todavía no publica ni consume. |
+| **RabbitMQ 4.0** | Broker de mensajes. | Vhost `mesatech`. `ms-catalogo` publica `categoria.creada`; `ms-solicitudes` guarda la copia. Guía: [`../pruebas-rabbitmq.md`](../pruebas-rabbitmq.md). |
 | **Docker Compose** | Orquestación local de contenedores. | MySQL y RabbitMQ en local y en EC2 (Nico). |
 
 ---
