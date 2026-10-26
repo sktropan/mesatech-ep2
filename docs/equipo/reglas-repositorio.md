@@ -108,7 +108,7 @@ Plantilla y flujo detallado: [`estrategia-branching.md`](estrategia-branching.md
 | JWT, proxy, roles | `bff/` |
 | Solicitudes y estados | `ms-solicitudes/` |
 | Catálogo | `ms-catalogo/` |
-| Postgres Docker | `infra/` |
+| MySQL 8.4 y RabbitMQ (Docker) | `infra/` |
 
 ---
 

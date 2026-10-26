@@ -72,8 +72,8 @@ docs/
 | --- | --- | --- |
 | `frontend/` | 3000 | `REACT_APP_API_BASE_URL` → Gateway en AWS |
 | `bff/` | 8080 | Resource Server, sin JPA |
-| `ms-solicitudes/` | 8081 | PostgreSQL `mesatech_solicitudes` |
-| `ms-catalogo/` | 8082 | PostgreSQL `mesatech_catalogo` |
-| `infra/` | 5432 | `docker compose up -d` |
+| `ms-solicitudes/` | 8081 | MySQL 8.4, base `solicitudes` |
+| `ms-catalogo/` | 8082 | MySQL 8.4, base `catalogo` |
+| `infra/` | 3306, 5672, 15672 | `docker compose up -d` (MySQL + RabbitMQ; el código aún no usa el broker) |
 
 Plantillas de variables: `env.example`, `frontend/.env.example`.

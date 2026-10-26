@@ -35,7 +35,7 @@ Términos que aparecen en la guía EP1, el informe y la arquitectura MesaTech. P
 | **JWT Authorizer** | Valida JWT en el Gateway antes de reenviar al backend. | Issuer + audience de Entra (Ari → Ninna). |
 | **Integración HTTP** | Gateway reenvía la petición a una URL backend (BFF EC2). | `:8080` en instancia privada/pública acotada. |
 | **CORS** | Reglas del navegador: qué orígenes pueden llamar la API. | Gateway + BFF; origen del React. |
-| **EC2** | Máquina virtual en AWS. | BFF, MS, Docker Postgres. |
+| **EC2** | Máquina virtual en AWS. | BFF, MS, Docker MySQL. |
 | **Security Group (SG)** | Firewall de instancia (puertos/origen). | BFF solo desde Gateway; MS solo desde BFF. |
 | **401 Unauthorized** | Sin autenticación válida. | Gateway sin token; acceso directo a BFF/MS en entrega. |
 | **403 Forbidden** | Autenticado pero sin permiso (rol/autorización). | Matriz cliente/operador/admin (Skarlet). |
@@ -49,8 +49,9 @@ Términos que aparecen en la guía EP1, el informe y la arquitectura MesaTech. P
 | **BFF** | Backend for Frontend: capa que adapta APIs al front. | `bff/` — valida JWT, no tiene BD. |
 | **Microservicio** | Servicio de dominio independiente con su persistencia. | `ms-solicitudes`, `ms-catalogo`. |
 | **Versionamiento de API** | Convivencia de `/v1` y `/v2` con contratos distintos. | v2 envoltorio en `GET …/mias`. |
-| **PostgreSQL 16** | Motor relacional open source. | Docker `infra/`; dos bases lógicas. |
-| **Docker Compose** | Orquestación local de contenedores. | Postgres en local y en EC2 (Nico). |
+| **MySQL 8.4** | Motor relacional. Hibernate detecta el dialecto por la URL JDBC; no hay dialecto fijo en `application.properties`. | Docker `infra/`; bases `catalogo` y `solicitudes`. |
+| **RabbitMQ 4.0** | Broker de mensajes. | Contenedor `rabbitmq:4.0-management` en `infra/`. El código Java todavía no publica ni consume. |
+| **Docker Compose** | Orquestación local de contenedores. | MySQL y RabbitMQ en local y en EC2 (Nico). |
 
 ---
 

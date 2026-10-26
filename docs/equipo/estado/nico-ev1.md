@@ -1,6 +1,8 @@
 # Estado EV1 — Nico (EC2, seguridad, integración Git)
 
-Última actualización: integración en rama **`dev`** / **`feature/nico-ec2`** (mismo commit). **`main`** aún no recibe merge (revisión E2E pendiente).
+Este archivo registra lo que quedó **hecho en la EV1** (PostgreSQL 16). En EP2 el motor es MySQL 8.4 y RabbitMQ 4.0 está en Docker sin uso desde Java. No reescribas las evidencias de abajo: describen esa entrega.
+
+Última actualización del registro EV1: integración en rama **`dev`** / **`feature/nico-ec2`** (mismo commit). **`main`** aún no recibe merge (revisión E2E pendiente).
 
 ---
 

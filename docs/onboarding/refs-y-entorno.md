@@ -129,7 +129,9 @@ REACT_APP_ENTRA_CLIENT_ID
 REACT_APP_ENTRA_TENANT_ID
 REACT_APP_ENTRA_API_SCOPE
 REACT_APP_API_BASE_URL   ← en AWS es la URL del Gateway; no commitear IPs
-POSTGRES_USER / POSTGRES_PASSWORD   ← si se cambian respecto del example
+DB_USER / DB_PASSWORD           ← si se cambian respecto del example
+DB_URL                          ← solo si no usas el default local de cada MS
+MYSQL_* / RABBITMQ_DEFAULT_*    ← infra/.env (Compose); no versionar
 MS_SOLICITUDES_URL / MS_CATALOGO_URL
 ```
 
@@ -162,7 +164,7 @@ Crear estos archivos **fuera del repo** o confirmar que Git los ignore antes de 
 | Clave SSH de EC2 | `*.pem`, `*.ppk` | Nico: `ssh -i ...` |
 | Credenciales AWS | `~/.aws/credentials` (nunca copiar al repo) | Consola / CLI de Ninna y Nico |
 | Client secret de Entra | Portal Azure | Esta SPA es pública (MSAL); **no hace falta** secret en el front. Si alguien crea un secret de la API, no pegarlo en código |
-| Password de Postgres en EC2 | Variables de entorno / systemd | Distinta del `mesatech/mesatech` de local si se endurece |
+| Password de MySQL en EC2 | `DB_PASSWORD` y `infra/.env` / systemd | Distinta de `mesatech` de local si se endurece |
 | Capturas del informe con tokens visibles | Carpeta del Word/PDF, no Git | Redactar Bearer tokens en prints |
 
 `.gitignore` del repo ya ignora `*.pem` y `*.ppk` para no subir la llave de EC2 por accidente.
@@ -178,7 +180,7 @@ No es código del producto. Si lo tienes, déjalo fuera de Git:
 
 ## 6. Setup local (sin `_refs`, con el código de este repo)
 
-Requisitos: Java 17, Maven, Node.js (LTS), Docker.
+Requisitos: Java 21, Maven, Node.js (LTS), Docker.
 
 1. Pedir a Ari (canal privado) tenant, Client ID SPA, Client ID API y scope.
 2. Copiar plantillas:
@@ -197,14 +199,15 @@ Requisitos: Java 17, Maven, Node.js (LTS), Docker.
    REACT_APP_API_BASE_URL=http://localhost:8080
    ```
 
-3. Levantar Postgres:
+3. Levantar MySQL 8.4 y RabbitMQ 4.0:
 
    ```bash
    cd infra
+   cp .env.example .env
    docker compose up -d
    ```
 
-   Crea las bases `mesatech_solicitudes` y `mesatech_catalogo`.
+   Crea las bases `catalogo` y `solicitudes`. RabbitMQ queda en marcha; los JAR todavía no se conectan.
 
 4. Exportar variables (PowerShell) y arrancar los tres Spring Boot **en terminales distintas**:
 
@@ -266,7 +269,7 @@ Toda la documentación vive bajo **`docs/`**. Índice: [`docs/README.md`](../REA
 | `docs/contexto/anotaciones-profesor.md` | Instrucciones verbales y decisiones del equipo |
 | `docs/guia/entra-spring-react.md` | Entra ID + Resource Server + MSAL (19 pasos) |
 | `docs/guia/instructivo-maestro-ev1.md` | Hoja de ruta EV1 por fases A–G |
-| `docs/arquitectura/diagrama.md` | Flujo React → Gateway → BFF → MS → Postgres |
+| `docs/arquitectura/diagrama.md` | Flujo React → Gateway → BFF → MS → MySQL |
 | `docs/equipo/plan-trabajo.md` | Reparto Ari / Ninna / Nico / Skarlet |
 | `docs/glosario/` y `docs/dominio/` | Términos cloud y negocio MesaTech |
 | `env.example` y `frontend/.env.example` | Plantillas **sin** secretos |
@@ -283,4 +286,4 @@ Toda la documentación vive bajo **`docs/`**. Índice: [`docs/README.md`](../REA
 - [ ] `docker compose up -d` en `infra/`.
 - [ ] Exporté `ENTRA_ISSUER_URI` y `ENTRA_AUDIENCE` antes de `mvn spring-boot:run`.
 - [ ] Confirmé que `git status` no muestra `.env`, `_refs/`, `node_modules/`, `target/` ni `*.pem`.
-- [ ] No copié MySQL, IDs hardcodeados ni `localhost:8080` fijo al front de producción.
+- [ ] No hardcodeé IDs de Entra ni `localhost:8080` en el front de producción. Las claves de MySQL y RabbitMQ están solo en `.env` / `infra/.env`.

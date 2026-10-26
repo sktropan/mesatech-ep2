@@ -9,9 +9,10 @@ frontend/build/
 **/target/
 **/.mvn/wrapper/maven-wrapper.jar
 
-# Entornos y secretos (usar env.example / frontend/.env.example)
+# Entornos y secretos (usar env.example, infra/.env.example y frontend/.env.example)
 .env
 .env.local
+infra/.env
 frontend/.env
 frontend/.env.local
 **/application-local.properties

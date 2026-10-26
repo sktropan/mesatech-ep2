@@ -1,21 +1,50 @@
+# Local: MySQL 8.4 + RabbitMQ 4.0.
+# Credenciales solo en infra/.env (copiar desde .env.example). Ese archivo no se versiona.
+# Los backends todavía no publican ni consumen mensajes: RabbitMQ queda preparado.
+
 services:
-  postgres:
-    image: postgres:16
-    container_name: mesatech-postgres
+  mysql:
+    image: mysql:8.4
+    container_name: mesatech-mysql
+    hostname: mesatech-mysql
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
-      POSTGRES_USER: mesatech
-      POSTGRES_PASSWORD: mesatech
-      POSTGRES_DB: postgres
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Definir MYSQL_ROOT_PASSWORD en infra/.env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-catalogo}
+      MYSQL_USER: ${MYSQL_USER:?Definir MYSQL_USER en infra/.env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Definir MYSQL_PASSWORD en infra/.env}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mesatech"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: mesatech-rabbitmq
+    hostname: mesatech-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?Definir RABBITMQ_DEFAULT_USER en infra/.env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Definir RABBITMQ_DEFAULT_PASS en infra/.env}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
 
 volumes:
-  postgres_data:
+  mysql_data:
+  rabbitmq_data:

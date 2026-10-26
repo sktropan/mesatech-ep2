@@ -1,5 +1,7 @@
 # Topología EC2 — decisión del equipo (EV1)
 
+**EP2:** esta rama usa **MySQL 8.4** (puerto **3306**, bases `catalogo` y `solicitudes`) y deja **RabbitMQ 4.0** en el mismo Compose. El código Java todavía no se conecta a RabbitMQ. La tabla de abajo es el registro de la entrega EV1, que usó PostgreSQL 16 en el puerto 5432.
+
 **Opción elegida:** **tres instancias EC2** en **us-east-1** (Learner Lab), una por capa:
 
 | Capa | Name tag | Puertos | Persistencia / procesos |

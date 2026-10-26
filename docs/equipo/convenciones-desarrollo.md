@@ -33,7 +33,7 @@ Ver [`reglas-repositorio.md`](reglas-repositorio.md) §1–3 y [`estrategia-bran
 | JWT, proxy, autorización por rol | `bff/` |
 | Solicitudes / estados | `ms-solicitudes/` |
 | Catálogo | `ms-catalogo/` |
-| Postgres local/EC2 | `infra/` |
+| MySQL 8.4 y RabbitMQ local/EC2 | `infra/` |
 
 ## Backend (Spring)
 

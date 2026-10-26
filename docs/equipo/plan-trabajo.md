@@ -36,7 +36,7 @@ Ari (Entra: tenant, apps, scope, roles)
   ├─→ Nico (ENTRA_* en EC2 + validación JWT en BFF/MS)
   └─→ Skarlet (roles en token → autorización 403)
 
-Nico (BFF/MS/Postgres en EC2, SG, URLs internas)
+Nico (BFF/MS/MySQL en EC2, SG, URLs internas)
   └─→ Ninna (integración HTTP API → BFF :8080 en EC2)
 
 Ninna (Gateway público + REACT_APP_API_BASE_URL)
@@ -170,7 +170,7 @@ Nico (presentación)
 
 ## Nico — C. Despliegue EC2 + D. Seguridad y arquitectura
 
-**Objetivo:** BFF + 2 MS + PostgreSQL en EC2; acceso directo a MS (y BFF si aplica) → 401 o bloqueo de red.
+**Objetivo:** BFF + 2 MS + MySQL 8.4 en EC2; acceso directo a MS (y BFF si aplica) → 401 o bloqueo de red. RabbitMQ 4.0 va en el mismo Compose y el código aún no lo usa.
 
 **Prerrequisito:** Ari entregó `ENTRA_ISSUER_URI` y `ENTRA_AUDIENCE`.
 
@@ -181,13 +181,14 @@ Nico (presentación)
    - **BFF** `:8080`
    - **ms-solicitudes** `:8081`
    - **ms-catalogo** `:8082`
-3. **PostgreSQL 16** con `infra/docker-compose.yml` (adaptar host/volumen en EC2).
-4. Bases: `mesatech_solicitudes`, `mesatech_catalogo`.
+3. **MySQL 8.4** con `infra/docker-compose.yml` (en `infra/`: `cp .env.example .env`). En EC2, el override publica solo loopback. RabbitMQ 4.0 sube junto, sin clientes Java todavía.
+4. Bases: `solicitudes`, `catalogo`.
 5. Variables en EC2:
    - `ENTRA_ISSUER_URI`, `ENTRA_AUDIENCE`
    - `MS_SOLICITUDES_URL=http://127.0.0.1:8081` (o IP privada)
    - `MS_CATALOGO_URL=http://127.0.0.1:8082`
-   - `POSTGRES_USER`, `POSTGRES_PASSWORD`
+   - `DB_USER`, `DB_PASSWORD`
+   - `DB_URL` solo si MySQL no está en localhost, y una URL por servicio (`jdbc:mysql://<host>:3306/solicitudes` y `.../catalogo`)
 6. Evidencias: SSH, `docker ps`, servicios escuchando, logs de arranque, consulta que persiste datos.
 
 ### D. Seguridad y arquitectura
@@ -241,7 +242,7 @@ Nico (presentación)
 ### Checklist Nico
 
 - [ ] Catálogo CRUD (PUT/DELETE) en repo + Gateway + EC2 (**Nico**).
-- [x] Tres servicios Java + Postgres arriba en EC2 (3 instancias; ver [`estado/nico-ev1.md`](estado/nico-ev1.md)).
+- [x] Tres servicios Java + Postgres arriba en EC2 en la entrega EV1 (3 instancias; ver [`estado/nico-ev1.md`](estado/nico-ev1.md)). EP2 cambia el motor a MySQL 8.4.
 - [x] MS no accesibles desde Internet.
 - [x] BFF valida JWT con issuer/audience del tenant del equipo (EC2 + local).
 - [x] Documento topología EC2: [`infra/ec2/TOPOLOGIA.md`](../infra/ec2/TOPOLOGIA.md) + diagrama en repo.
@@ -282,7 +283,7 @@ Nico (presentación)
 
 1. **9 pruebas** sección 11 EP1 (capturas/Postman): sin auth, Gateway sin token, JWT inválido, JWT OK, acción prohibida, CORS, regla estado, v1+v2, persistencia.
 2. **Flujo E2E** sección 10 (12 pasos) con prints.
-3. **Informe** pormenorizado: Azure (Ari), AWS Gateway (Ninna), EC2/Postgres (Nico), React/negocio (Skarlet) — integrar capturas de todos.
+3. **Informe** pormenorizado: Azure (Ari), AWS Gateway (Ninna), EC2/MySQL (Nico), React/negocio (Skarlet) — integrar capturas de todos. En la EV1 las capturas de Nico muestran PostgreSQL; en EP2 la persistencia es MySQL 8.4.
 4. **Diagrama final:** componente → servicio → URL/ruta real (actualizar [`docs/arquitectura/diagrama.md`](../arquitectura/diagrama.md) o anexo PDF).
 5. **Checklist 15 ítems** (EP1 §15) marcado con evidencia cruzada.
 6. Revisión: **ningún secret** en repo (`.env`, claves, IDs del profesor).

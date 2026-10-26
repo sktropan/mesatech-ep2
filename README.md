@@ -1,13 +1,12 @@
 # MesaTech Cloud — EV1 (DSY1107)
 
-Monorepo de la Evaluación Parcial 1: React + **Microsoft Entra ID** + **AWS API Gateway** + BFF y microservicios Spring Boot en **EC2**, con **PostgreSQL 16** en Docker.
+Monorepo MesaTech: React + **Microsoft Entra ID** + **AWS API Gateway** + BFF y microservicios Spring Boot (**Java 21**) en **EC2**, con **MySQL 8.4** en Docker. **RabbitMQ 4.0** está en el Compose local y todavía no lo usa el código.
 
 Equipo: **Ari**, **Ninna**, **Nico**, **Skarlet**.
 
 ```text
-React + MSAL  →  API Gateway  →  BFF :8080  →  ms-solicitudes :8081
-                                         └→  ms-catalogo    :8082
-                                                └→  PostgreSQL (Docker)
+React + MSAL  →  API Gateway  →  BFF :8080  →  ms-solicitudes :8081  →  MySQL (solicitudes)
+                                         └→  ms-catalogo    :8082  →  MySQL (catalogo)
 ```
 
 ---
@@ -39,7 +38,7 @@ Toda la guía del proyecto está en **[`docs/README.md`](docs/README.md)**:
 | `bff/` | 8080 | OAuth2 Resource Server, **sin JPA**, proxy a MS |
 | `ms-solicitudes/` | 8081 | Solicitudes y reglas de estado |
 | `ms-catalogo/` | 8082 | Categorías y prioridades |
-| `infra/` | 5432 | `docker compose` — PostgreSQL 16; despliegue EC2 en [`infra/ec2/README.md`](infra/ec2/README.md) |
+| `infra/` | 3306, 5672, 15672 | `docker compose` — MySQL 8.4 y RabbitMQ 4.0; despliegue EC2 en [`infra/ec2/README.md`](infra/ec2/README.md) |
 
 Origen conceptual: repos de ejemplo del profesor (ver onboarding); código entregable solo en las carpetas anteriores.
 
@@ -49,7 +48,7 @@ Origen conceptual: repos de ejemplo del profesor (ver onboarding); código entre
 
 1. Entra ID del **equipo** — [`docs/guia/entra-spring-react.md`](docs/guia/entra-spring-react.md).
 2. Copiar `env.example` y `frontend/.env.example` (IDs por canal privado, no los del profesor).
-3. `cd infra && docker compose up -d`
+3. `cd infra && cp .env.example .env && docker compose up -d`
 4. Exportar `ENTRA_ISSUER_URI` y `ENTRA_AUDIENCE`; en tres terminales: `mvn spring-boot:run` en `bff`, `ms-solicitudes`, `ms-catalogo`.
 5. `cd frontend && npm install && npm start`
 
